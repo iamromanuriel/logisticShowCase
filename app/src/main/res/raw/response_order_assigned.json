@@ -1,0 +1,68 @@
+{
+  "clients": [
+    {
+      "id": 101,
+      "name": "Juan Pérez",
+      "email": "juan.perez@email.com",
+      "phone": "+52 555-0123",
+      "address": "Av. Reforma 222, CDMX",
+      "latitude": 19.4270,
+      "longitude": -99.1677,
+      "orders": [
+        {
+          "id": 1,
+          "orderNum": "ORD-2026-001",
+          "amount": 1550.50,
+          "dateCreate": 1737801000000,
+          "dateStart": 1737802800000,
+          "dateEnd": 1737806400000,
+          "status": 3,
+          "clientId": 101,
+          "driverId": 50,
+          "items": [
+            {
+              "id": 1,
+              "name": "Tenis Deportivos",
+              "amount": 1.0,
+              "price": 1200,
+              "orderId": 1,
+              "barcode": "7501234567890",
+              "idOrder": "ORD-2026-001"
+            },
+            {
+              "id": 2,
+              "name": "Calcetines Pro",
+              "amount": 2.0,
+              "price": 175,
+              "orderId": 1,
+              "barcode": "7509876543210",
+              "idOrder": "ORD-2026-001"
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "orderNum": "ORD-2026-002",
+          "amount": 450.0,
+          "dateCreate": 1737810000000,
+          "dateStart": 0,
+          "dateEnd": 0,
+          "status": 1,
+          "clientId": 101,
+          "driverId": 0,
+          "items": [
+            {
+              "id": 3,
+              "name": "Gorra Running",
+              "amount": 1.0,
+              "price": 450,
+              "orderId": 2,
+              "barcode": "7501122334455",
+              "idOrder": "ORD-2026-002"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
