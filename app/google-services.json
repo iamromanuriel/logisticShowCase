@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "419860022499",
+    "project_id": "logistic-10a57",
+    "storage_bucket": "logistic-10a57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419860022499:android:fcc02079dc2236ecce71d6",
+        "android_client_info": {
+          "package_name": "com.example.logisticadministration"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFzARhcY7nUYnNCBDir48l0opxi7Ze_Tg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419860022499:android:843accc638bae456ce71d6",
+        "android_client_info": {
+          "package_name": "com.example.logisticshowcase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFzARhcY7nUYnNCBDir48l0opxi7Ze_Tg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

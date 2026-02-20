@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
 
 android {
@@ -52,6 +53,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,12 +67,17 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation("androidx.navigation:navigation-compose:2.8.0")
 
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.square.retrofit)
     implementation(libs.google.code.gson)
     implementation(libs.retrofit.gson)
+
+    implementation ("androidx.navigation:navigation-compose:2.9.7")
 
 
 

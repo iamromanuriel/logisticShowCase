@@ -11,7 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.logisticshowcase.ui.nav.NavigationGraph
 import com.example.logisticshowcase.ui.screen.home.HomeScreen
+import com.example.logisticshowcase.ui.screen.login.LoginScreen
+import com.example.logisticshowcase.ui.screen.order_detail.OrderDetailScreen
 import com.example.logisticshowcase.ui.theme.LogisticShowCaseTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,7 +25,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LogisticShowCaseTheme {
-                HomeScreen()
+                NavigationGraph()
             }
         }
     }

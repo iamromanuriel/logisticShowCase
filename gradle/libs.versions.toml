@@ -11,6 +11,8 @@ composeBom = "2024.09.00"
 hilt = "2.57.1"
 ksp = "2.0.21-1.0.25"
 retrofit = "3.0.0"
+googleGmsGoogleServices = "4.4.4"
+firebaseBom = "33.9.0"
 
 
 [libraries]
@@ -37,6 +39,9 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version = "2.6
 square-retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
 retrofit-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
 google-code-gson = { group = "com.google.code.gson", name = "gson", version = "2.13.2" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.5"}
 
 
 [plugins]
@@ -45,4 +50,5 @@ kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 
