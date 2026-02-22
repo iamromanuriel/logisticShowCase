@@ -13,7 +13,7 @@ class ModuleMainRepository {
     @Singleton
     @Provides
     fun providerMainRepository(): MainRepository {
-        return MainRepositoryImp()
+        return MainHardCodeRepository()
     }
 
 }

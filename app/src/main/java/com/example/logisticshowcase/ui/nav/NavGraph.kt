@@ -6,8 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.logisticshowcase.ui.screen.home.HomeScreen
 import com.example.logisticshowcase.ui.screen.map_deliver.MapDeliveryScreen
+import com.example.logisticshowcase.ui.screen.order_detail.OrderDetailScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.serialization.Serializable
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -20,15 +20,19 @@ fun NavigationGraph() {
         startDestination = Map
     ) {
         composable<Home> {
-            HomeScreen(
-
-            )
+            HomeScreen()
         }
 
         composable<Map> {
+            MapDeliveryScreen(
+                navController = navController
+            )
+        }
 
-
-            MapDeliveryScreen()
+        composable<DetailOrder> {
+            OrderDetailScreen(
+                navController = navController
+            )
         }
 
     }
