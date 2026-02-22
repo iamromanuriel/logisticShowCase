@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,6 +72,7 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
+    implementation("com.google.maps.android:maps-compose:4.4.1")
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.square.retrofit)
@@ -78,6 +80,8 @@ dependencies {
     implementation(libs.retrofit.gson)
 
     implementation ("androidx.navigation:navigation-compose:2.9.7")
+
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 
 
 
