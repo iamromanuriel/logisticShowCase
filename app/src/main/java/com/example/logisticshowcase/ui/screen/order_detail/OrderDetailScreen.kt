@@ -1,8 +1,6 @@
 package com.example.logisticshowcase.ui.screen.order_detail
 
-import android.widget.Button
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -43,7 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.logisticshowcase.data.model.OrderDetail
 import com.example.logisticshowcase.ui.components.ProductItem
-import com.example.logisticshowcase.util.location.LocationCurrent
 import com.example.logisticshowcase.util.location.launchNavigation
 
 @Composable
@@ -183,9 +180,8 @@ fun TimelineItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min) // Importante para que la línea sepa cuánto medir
+            .height(IntrinsicSize.Min)
     ) {
-        // Columna de la línea y el círculo
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(40.dp)
@@ -197,7 +193,6 @@ fun TimelineItem(
                     .background(dotColor, CircleShape)
             )
 
-            // La línea (Solo si no es el último elemento)
             if (!isLast) {
                 Box(
                     modifier = Modifier
@@ -208,7 +203,6 @@ fun TimelineItem(
             }
         }
 
-        // Columna del Texto
         Column(
             modifier = Modifier
                 .padding(start = 12.dp, bottom = 24.dp)

@@ -30,17 +30,21 @@ fun LoginScreen(
     val onChangePassword: (String) -> Unit = remember(viewModel) { viewModel::onChangePassword }
     val onLogin: () -> Unit = remember(viewModel) { viewModel::onLogin }
 
-    LoginScreen(state = state)
+    LoginScreen(state = state, onChangeUserName = onChangeUserName, onChangePassword = onChangePassword)
 }
 
 @Composable
-private fun LoginScreen(state: LoginState){
+private fun LoginScreen(state: LoginState, onChangeUserName: (String) -> Unit, onChangePassword: (String) -> Unit){
     Scaffold(
 
     ) { innerPadding ->
         Column(modifier = Modifier.padding(paddingValues = innerPadding)) {
             TitleAndDescriptionLogin()
-            LoginControls()
+            LoginControls(
+                state = state,
+                onChangeUserName = onChangeUserName,
+                onChangePassword = onChangePassword,
+            )
         }
     }
 }
@@ -70,18 +74,22 @@ fun TitleAndDescriptionLogin(){
 }
 
 @Composable
-fun LoginControls(){
+fun LoginControls(
+    state: LoginState,
+    onChangeUserName: (String) -> Unit = {},
+    onChangePassword: (String) -> Unit = {},
+){
     TextField(
         modifier = Modifier.fillMaxWidth(),
-        value = "",
-        onValueChange = {},
+        value = state.userName,
+        onValueChange = onChangeUserName,
         label = { Text("Nombre de usuario") },
     )
     Spacer(modifier = Modifier.fillMaxWidth().height(20.dp))
     TextField(
         modifier = Modifier.fillMaxWidth(),
-        value = "",
-        onValueChange = {},
+        value = state.password,
+        onValueChange = onChangePassword,
         label = { Text("contraseña") },
     )
 
@@ -96,5 +104,5 @@ fun LoginControls(){
 @Preview(showBackground = true)
 @Composable
 private fun LoginScreenPreview(){
-    LoginScreen(state = LoginState())
+    LoginScreen(state = LoginState(), onChangeUserName = {}, onChangePassword = {})
 }

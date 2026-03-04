@@ -41,7 +41,6 @@ class MapDeliveryViewModel @Inject constructor(
         .combine(
             mainRepository.getOrders()
         ){ stateCurrent, orders ->
-            Log.d("MapDeliveryViewModel", orders.toString())
             stateCurrent.copy(
                 orders = orders
             )
