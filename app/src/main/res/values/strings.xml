@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">LogisticShowCase</string>
+    <string name="invaliate_username">El nombre de usuario no es valido</string>
+    <string name="invaliate_password">La contraseña no es valida</string>
+
+    <!-- LABEL -->
+    <string name="label_username">Nombre de usuario</string>
+    <string name="label_password">Contraseña</string>
+    <string name="label_login">Iniciar sesión</string>
+
 </resources>

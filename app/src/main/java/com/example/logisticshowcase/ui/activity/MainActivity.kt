@@ -36,11 +36,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             LogisticShowCaseTheme {
                 val mainState by viewModel.state.collectAsStateWithLifecycle()
-
+                val localPermission = rememberPermissionState(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
                 if(mainState.userLogIn){
-                    val localPermission = rememberPermissionState(
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
                     if(localPermission.status.isGranted){
                         NavigationGraph()
                     }else{
@@ -52,16 +51,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }
-
-
-@Composable
-fun GoogleMapSample() {
-    GoogleMap { }
-}
-
-
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {

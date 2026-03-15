@@ -1,7 +1,9 @@
 package com.example.logisticshowcase.ui.screen.login
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.logisticshowcase.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,14 +11,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Immutable
 data class LoginState(
     val userName: String = "",
     val password: String = "",
-    val userNameError: String? = null,
-    val passwordError: String? = null,
+    val userNameError: Any? = null,
+    val passwordError: Any? = null,
     val isLoginEnable: Boolean = false,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val loading: Boolean = false
 )
+
+sealed class LoginIntent(){
+    data class OnChangeUserName(val userName: String): LoginIntent()
+    data class OnChangePassword(val password: String): LoginIntent()
+    object OnLogin: LoginIntent()
+}
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(): ViewModel(){
@@ -25,7 +35,17 @@ class LoginViewModel @Inject constructor(): ViewModel(){
     val state = _state.asStateFlow()
 
 
-    fun onChangeUserName(name: String){
+    fun onIntent(intent: LoginIntent){
+        when(intent){
+            is LoginIntent.OnChangeUserName -> onChangeUserName(intent.userName)
+            is LoginIntent.OnChangePassword -> onChangePassword(intent.password)
+            is LoginIntent.OnLogin -> onLogin()
+        }
+    }
+
+
+    private fun onChangeUserName(name: String){
+
         _state.update { stateCurrent ->
             stateCurrent.copy(
                 userName = name
@@ -33,7 +53,7 @@ class LoginViewModel @Inject constructor(): ViewModel(){
         }
     }
 
-    fun onChangePassword(password: String){
+    private fun onChangePassword(password: String){
         _state.update { stateCurrent ->
             stateCurrent.copy(
                 password = password
@@ -42,8 +62,38 @@ class LoginViewModel @Inject constructor(): ViewModel(){
     }
 
 
-    fun onLogin(){
-        viewModelScope.launch {}
+    private fun onLogin(){
+        viewModelScope.launch {
+            _state.update { stateCurrent ->
+                stateCurrent.copy(
+                    loading = true
+                )
+            }
+
+            val userName = _state.value.userName
+
+            if(isValidateUserName(userName = userName)){
+                _state.update { stateCurrent ->
+                    stateCurrent.copy(
+                        userNameError = null,
+                        loading = false,
+                        isSuccess = true
+                    )
+                }
+            }else{
+                _state.update { stateCurrent ->
+                    stateCurrent.copy(
+                        userNameError = R.string.invaliate_username,
+                        loading = false
+                    )
+                }
+            }
+        }
+    }
+
+    fun isValidateUserName(userName: String): Boolean{
+        val USERNAME_REGEX = "^[a-zA-Z0-9][a-zA-Z0-9._]{1,28}[a-zA-Z0-9]$".toRegex()
+        return userName.matches(USERNAME_REGEX)
     }
 
 }

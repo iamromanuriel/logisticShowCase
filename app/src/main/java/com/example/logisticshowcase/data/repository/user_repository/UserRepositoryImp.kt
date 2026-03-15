@@ -9,7 +9,7 @@ class UserRepositoryImp : UserRepository {
         get() = _userLogIn
 
     init {
-        _userLogIn.value = true
+        //_userLogIn.value = true
     }
 
 }

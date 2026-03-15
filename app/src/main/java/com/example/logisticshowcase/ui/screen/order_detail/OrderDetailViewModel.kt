@@ -22,12 +22,17 @@ data class OrderDetailState(
     val isLoading : Boolean = false,
     val deliveryState: DeliveryState? = null
 )
+
+sealed class OrderDetailIntent(){
+    data class OnChangeState(val newState: DeliveryState): OrderDetailIntent()
+}
+
 @HiltViewModel
 class OrderDetailViewModel @Inject constructor(
-    private val mainRepository: MainRepository,
+    mainRepository: MainRepository,
     private val deliveryManager: DeliveryManager
 ): ViewModel() {
-    private val _state = MutableStateFlow<OrderDetailState>(OrderDetailState())
+    private val _state = MutableStateFlow(OrderDetailState())
     val state = combine(
         _state,
         mainRepository.getOrderDetail(),
@@ -46,4 +51,14 @@ class OrderDetailViewModel @Inject constructor(
     )
 
 
+
+    fun onIntent(newState: OrderDetailIntent){
+        when(newState){
+            is OrderDetailIntent.OnChangeState -> onChangeState(newState.newState)
+        }
+    }
+
+    private fun onChangeState(newState: DeliveryState){
+        deliveryManager.updateDeliveryState(newState)
+    }
 }

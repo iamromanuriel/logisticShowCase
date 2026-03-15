@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
@@ -50,16 +51,24 @@ fun OrderDetailScreen(
 ){
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val intent: (OrderDetailIntent) -> Unit = remember {
+         viewModel::onIntent
+    }
 
     val onBackNavigation: () -> Unit = remember {
         { navController.popBackStack() }
     }
-    OrderDetailScreen(state, onBackNavigation = onBackNavigation)
+    OrderDetailScreen(
+        state = state,
+        intent = intent,
+        onBackNavigation = onBackNavigation
+    )
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun OrderDetailScreen(
     state: OrderDetailState,
+    intent: (OrderDetailIntent) -> Unit = {},
     onBackNavigation: () -> Unit = {}
 ){
 
@@ -71,7 +80,7 @@ private fun OrderDetailScreen(
                         onClick = onBackNavigation
                     ) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             null
                         )
                     }
