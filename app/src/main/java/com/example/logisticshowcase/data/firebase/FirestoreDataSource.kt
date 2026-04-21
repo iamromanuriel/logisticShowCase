@@ -1,6 +1,7 @@
 package com.example.logisticshowcase.data.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.snapshots
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -27,5 +28,18 @@ fun getUserPresenter(): Flow<List<UserCollection>>{
                 }
             }
     }     */
+
+
+    suspend fun testFireStore(){
+        firestore
+            .collection(FirestoreCollection.USERS.value)
+            .get()
+            .addOnSuccessListener { result ->
+                println("dataTestUser: ${result.documents.size}")
+            }
+
+
+
+    }
 
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.logisticshowcase.R
+import com.example.logisticshowcase.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,10 +30,19 @@ sealed class LoginIntent(){
 }
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(): ViewModel(){
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+): ViewModel(){
 
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            authRepository.testCollectionUser()
+        }
+
+    }
 
 
     fun onIntent(intent: LoginIntent){

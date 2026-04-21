@@ -3,7 +3,9 @@ package com.example.logisticshowcase.ui.screen.map_deliver
 import android.graphics.drawable.Icon
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +22,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
@@ -37,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -93,6 +98,7 @@ fun MapDeliveryScreen(
     val modalState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    var showClientInfo by remember { mutableStateOf(false) }
     var showModalOrder by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -125,7 +131,8 @@ fun MapDeliveryScreen(
 
             state.orders.forEach { orderItem ->
                 MarkerComposable(
-                    state = MarkerState(position = orderItem.toLatLng())
+                    state = MarkerState(position = orderItem.toLatLng()),
+                    onClick = { marker -> showClientInfo = true; true }
                 ) {
                     Box(
                         modifier = Modifier
@@ -162,6 +169,21 @@ fun MapDeliveryScreen(
                     })
             }
         }
+
+        if(showClientInfo){
+            ModalBottomSheet(
+                containerColor = MaterialTheme.colorScheme.background,
+                sheetState = modalState,
+                onDismissRequest = {
+                    showClientInfo = false
+                }
+            ) {
+                LayoutInfoOrderDetail{
+                    onNavigationDetail(1)
+                    showClientInfo = false
+                }
+            }
+        }
     }
 }
 
@@ -180,6 +202,45 @@ fun LayoutItemOrders(
                 order = order,
                 onClick = { onNavigationDetail(order.id) }
             )
+        }
+    }
+}
+
+@Composable
+fun LayoutInfoOrderDetail(
+    onNavDetail: () -> Unit = {}
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        Spacer(modifier = Modifier.size(10.dp))
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = null,
+            modifier = Modifier.size(60.dp)
+        )
+
+        Spacer(modifier = Modifier.size(10.dp))
+        Text(
+            text = "En espera",
+            style = MaterialTheme.typography.titleSmall,
+        )
+        Spacer(modifier = Modifier.size(10.dp))
+
+        Text(
+            text = "Casa de Pepe",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.size(10.dp))
+
+        Button(
+            modifier = Modifier.fillMaxWidth(0.5f).padding(bottom = 10.dp),
+            onClick = onNavDetail
+        ) {
+            Text(text = "Ir a detalle")
         }
     }
 }
