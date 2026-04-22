@@ -1,5 +1,7 @@
 package com.example.logisticshowcase.data.repository.user_repository
 
+import com.example.logisticshowcase.data.db.AppDatabase
+import com.example.logisticshowcase.data.firebase.FirestoreDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -12,7 +14,7 @@ class ModuleUserRepository {
 
     @ViewModelScoped
     @Provides
-    fun providerUserRepository(): UserRepository {
-        return UserRepositoryImp()
+    fun providerUserRepository(appDatabase: AppDatabase, firestoreDataSource: FirestoreDataSource): UserRepository {
+        return UserRepositoryImp(database = appDatabase, firestore = firestoreDataSource)
     }
 }

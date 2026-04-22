@@ -5,4 +5,5 @@ enum class FirestoreCollection(var value: String){
     ORDERS("orders"),
     ITEM_ORDER("item_order"),
     CUSTOMERS("customers"),
+    VEHICLES("vehicles")
 }

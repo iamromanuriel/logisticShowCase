@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.logisticshowcase.ui.components.GetLocationPermission
 import com.example.logisticshowcase.ui.nav.NavigationGraph
+import com.example.logisticshowcase.ui.screen.home.HomeScreen
 import com.example.logisticshowcase.ui.screen.login.LoginScreen
 import com.example.logisticshowcase.ui.theme.LogisticShowCaseTheme
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -42,7 +43,8 @@ class MainActivity : ComponentActivity() {
                 )
                 if(mainState.userLogIn){
                     if(localPermission.status.isGranted){
-                        NavigationGraph()
+                        //NavigationGraph()
+                        HomeScreen()
                     }else{
                         GetLocationPermission()
                     }
