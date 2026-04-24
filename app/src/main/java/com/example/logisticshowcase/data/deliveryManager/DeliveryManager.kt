@@ -2,15 +2,38 @@ package com.example.logisticshowcase.data.deliveryManager
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import javax.inject.Inject
-import javax.inject.Singleton
+data class TimelineStep(
+    val title: String,
+    val subtitle: String,
+    val action: String? = null,
+    val isActive: Boolean,
+    val isCompleted: Boolean
+)
 
-sealed class DeliveryState{
-    object Idle: DeliveryState()
-    object InTransit: DeliveryState()
-    object ArrivedAtDestination: DeliveryState()
-    object Completed: DeliveryState()
-    object Cancelled: DeliveryState()
+fun getGenericTimeline(currentState: DeliveryState): List<TimelineStep> {
+    val states = listOf(
+        Triple("Asignado", "Esperando inicio de ruta", DeliveryState.Idle),
+        Triple("En Tránsito", "Viajando al destino", DeliveryState.InTransit),
+        Triple("En Destino", "Confirmando llegada", DeliveryState.ArrivedAtDestination),
+        Triple("Finalizado", "Proceso concluido", DeliveryState.Completed)
+    )
+
+    return states.map { (title, subtitle, state) ->
+        TimelineStep(
+            title = title,
+            subtitle = subtitle,
+            isCompleted = currentState.order > state.order || currentState is DeliveryState.Completed,
+            isActive = currentState.order == state.order && currentState !is DeliveryState.Cancelled
+        )
+    }
+}
+
+sealed class DeliveryState(val order: Int, val label: String) {
+    data object Idle : DeliveryState(0, "Iniciar ruta")
+    data object InTransit : DeliveryState(1, "Llege")
+    data object ArrivedAtDestination : DeliveryState(2, "Finalizar")
+    data object Completed : DeliveryState(3, "")
+    data object Cancelled : DeliveryState(4, "")
 }
 
 interface DeliveryManager{

@@ -6,12 +6,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "OrderItem")
 data class OrderItemEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     val amount: Double,
     val name: String,
-    val prince: Int,
+    val prince: Double,
     val orderId: Int,
-    val barcode: String,
+    val barcode: String? = null,
     val idOrder: String
 ) {
 }

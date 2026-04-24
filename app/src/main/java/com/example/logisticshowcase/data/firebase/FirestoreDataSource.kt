@@ -1,6 +1,10 @@
 package com.example.logisticshowcase.data.firebase
 
+import com.example.logisticshowcase.data.db.entity.OrderItemEntity
 import com.example.logisticshowcase.data.db.entity.Vehicle
+import com.example.logisticshowcase.data.firebase.collection.ClientCollection
+import com.example.logisticshowcase.data.firebase.collection.OrderCollection
+import com.example.logisticshowcase.data.firebase.collection.OrderItemCollection
 import com.example.logisticshowcase.data.firebase.collection.UserCollection
 import com.example.logisticshowcase.data.firebase.collection.VehicleCollection
 import com.google.firebase.firestore.FirebaseFirestore
@@ -92,5 +96,56 @@ fun getUserPresenter(): Flow<List<UserCollection>>{
 
         }
     }
+
+    /**
+     * get Order
+     */
+
+    suspend fun getOrders(): Result<List<OrderCollection>> {
+        return runCatching {
+            val querySnapshot = firestore
+                .collection(FirestoreCollection.ORDERS.value)
+                .get()
+                .await()
+
+            if (!querySnapshot.isEmpty) {
+                querySnapshot.toObjects(OrderCollection::class.java)
+            } else {
+                throw Exception("No se encontraron órdenes disponibles")
+            }
+        }
+    }
+
+    suspend fun getClientById(clientId: String): Result<ClientCollection> {
+        return runCatching {
+            val documentSnapshot = firestore
+                .collection(FirestoreCollection.CUSTOMERS.value)
+                .document(clientId) // Vas directo al grano
+                .get()
+                .await()
+
+            if (documentSnapshot.exists()) {
+                documentSnapshot.toObject(ClientCollection::class.java)
+                    ?: throw Exception("Error al parsear los datos del cliente")
+            } else {
+                throw Exception("El cliente con ID $clientId no existe")
+            }
+        }
+    }
+
+    suspend fun getOrderItems(): Result<List<OrderItemCollection>>{
+        return runCatching {
+            val querySnapshot = firestore
+                .collection(FirestoreCollection.ITEM_ORDER.value)
+                .get()
+                .await()
+            if(!querySnapshot.isEmpty){
+                querySnapshot.toObjects(OrderItemCollection::class.java)
+            }else{
+                throw Exception("No se encontraron órdenes disponibles")
+            }
+        }
+    }
+
 
 }

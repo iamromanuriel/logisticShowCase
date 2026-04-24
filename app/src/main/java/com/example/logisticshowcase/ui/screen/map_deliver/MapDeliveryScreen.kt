@@ -1,9 +1,14 @@
 package com.example.logisticshowcase.ui.screen.map_deliver
 
-import android.graphics.drawable.Icon
-import android.util.Log
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,19 +18,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -48,20 +50,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.logisticshowcase.data.model.OrderItem
-import com.example.logisticshowcase.ui.components.OrderItem
+import com.example.logisticshowcase.ui.components.OrderItemCard
 import com.example.logisticshowcase.ui.nav.DetailOrder
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerComposable
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -191,17 +191,41 @@ fun MapDeliveryScreen(
 @Composable
 fun LayoutItemOrders(
     orders: List<OrderItem>,
-    innerPaddingValues: PaddingValues,
+    innerPaddingValues: PaddingValues = PaddingValues(0.dp),
     onNavigationDetail: (Int) -> Unit = {}
 ) {
     LazyColumn(
-        contentPadding = innerPaddingValues
+        contentPadding = PaddingValues(
+            start = 16.dp,
+            end = 16.dp,
+            top = innerPaddingValues.calculateTopPadding() + 8.dp,
+            bottom = innerPaddingValues.calculateBottomPadding() + 16.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        items(orders) { order ->
-            OrderItem(
-                order = order,
-                onClick = { onNavigationDetail(order.id) }
-            )
+        itemsIndexed(orders) { index, order ->
+            // Staggered entrance: cada item entra con un pequeño retardo
+            var visible by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) {
+                delay(index * 60L)
+                visible = true
+            }
+
+            AnimatedVisibility (
+                visible = visible,
+                enter = fadeIn(tween (350)) + slideInVertically (
+                    initialOffsetY = { 40 },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium
+                    )
+                )
+            ) {
+                OrderItemCard (
+                    order = order,
+                    onClick = { onNavigationDetail(order.id) }
+                )
+            }
         }
     }
 }
@@ -217,7 +241,8 @@ fun LayoutInfoOrderDetail(
     ) {
         Spacer(modifier = Modifier.size(10.dp))
         Icon(
-            imageVector = Icons.Default.Info,
+            imageVector = Icons.Default.LocationOn,
+            tint = MaterialTheme.colorScheme.primary,
             contentDescription = null,
             modifier = Modifier.size(60.dp)
         )

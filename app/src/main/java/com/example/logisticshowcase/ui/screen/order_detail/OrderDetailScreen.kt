@@ -1,6 +1,6 @@
 package com.example.logisticshowcase.ui.screen.order_detail
 
-
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -27,31 +27,21 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.logisticshowcase.data.db.entity.OrderEntity
+import com.example.logisticshowcase.data.db.entity.OrderItemEntity
+import com.example.logisticshowcase.data.deliveryManager.DeliveryState
+import com.example.logisticshowcase.data.deliveryManager.TimelineStep
+import com.example.logisticshowcase.data.deliveryManager.getGenericTimeline
 import com.example.logisticshowcase.data.model.OrderDetail
+import com.example.logisticshowcase.data.model.OrderItem
 import com.example.logisticshowcase.util.location.launchNavigation
+import com.google.gson.Gson
 import kotlinx.coroutines.delay
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models
 // ─────────────────────────────────────────────────────────────────────────────
 
-data class TimelineStep(
-    val title: String,
-    val subtitle: String,
-    val isActive: Boolean,
-    val isCompleted: Boolean
-)
-
-val mySteps = listOf(
-    TimelineStep("Pedido Recibido",       "Estamos preparando tu orden",  isCompleted = true,  isActive = false),
-    TimelineStep("En Cocina",             "El chef está en ello",         isCompleted = true,  isActive = false),
-    TimelineStep("Repartidor en camino",  "Tu comida va volando",         isCompleted = false, isActive = true),
-    TimelineStep("Entregado",             "¡Buen provecho!",              isCompleted = false, isActive = false)
-)
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Entry-point composable (with ViewModel)
-// ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun OrderDetailScreen(
@@ -61,6 +51,10 @@ fun OrderDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val intent: (OrderDetailIntent) -> Unit = remember { viewModel::onIntent }
     val onBack: () -> Unit = remember { { navController.popBackStack() } }
+
+    LaunchedEffect(state) {
+        Log.d("OrderDetailScreen", "state: ${Gson().toJson(state.orderDetail)}")
+    }
 
     OrderDetailScreen(state = state, intent = intent, onBackNavigation = onBack)
 }
@@ -76,17 +70,16 @@ private fun OrderDetailScreen(
     intent: (OrderDetailIntent) -> Unit = {},
     onBackNavigation: () -> Unit = {}
 ) {
-    // Master "entered" flag — drives all entrance animations
     var entered by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { entered = true }
 
     Scaffold(
         topBar = {
             AnimatedOrderTopBar(
-                orderId    = state.orderDetail?.reference ?: "—",
-                entered    = entered,
-                onBack     = onBackNavigation,
-                onFinish   = {  }
+                orderId =  "referencia de lugar—",
+                entered = entered,
+                onBack = onBackNavigation,
+                onFinish = { }
             )
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -94,10 +87,10 @@ private fun OrderDetailScreen(
 
         LazyColumn(
             contentPadding = PaddingValues(
-                top    = innerPadding.calculateTopPadding() + 12.dp,
+                top = innerPadding.calculateTopPadding() + 12.dp,
                 bottom = innerPadding.calculateBottomPadding() + 24.dp,
-                start  = 16.dp,
-                end    = 16.dp
+                start = 16.dp,
+                end = 16.dp
             ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -106,16 +99,16 @@ private fun OrderDetailScreen(
             item {
                 AnimatedVisibility(
                     visible = entered,
-                    enter   = fadeIn(tween(400)) + slideInVertically(tween(400)) { -40 }
+                    enter = fadeIn(tween(400)) + slideInVertically(tween(400)) { -40 }
                 ) {
-                    state.orderDetail?.let { CardProgressOrder(orderDetail = it) }
+                    state.let { CardProgressOrder(orderDetail = it) }
                 }
             }
 
             // ── Product items (staggered) ──────────────────────────────────
-            itemsIndexed(List(4) { it }) { index, _ ->
+            itemsIndexed(state.products) { index, item ->
                 StaggeredItem(index = index, entered = entered) {
-                    ProductItem()
+                    ProductItem(item)
                 }
             }
         }
@@ -136,7 +129,7 @@ private fun AnimatedOrderTopBar(
 ) {
     AnimatedVisibility(
         visible = entered,
-        enter   = fadeIn(tween(300)) + slideInVertically(tween(350)) { -60 }
+        enter = fadeIn(tween(300)) + slideInVertically(tween(350)) { -60 }
     ) {
         TopAppBar(
             navigationIcon = {
@@ -150,12 +143,12 @@ private fun AnimatedOrderTopBar(
             title = {
                 Column {
                     Text(
-                        text  = "Orden #$orderId",
+                        text = "Orden #$orderId",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text  = "Seguimiento en tiempo real",
+                        text = "Seguimiento en tiempo real",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -165,7 +158,7 @@ private fun AnimatedOrderTopBar(
                 FilledTonalButton(
                     onClick = onFinish,
                     modifier = Modifier.padding(end = 8.dp),
-                    shape    = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Finalizar")
                 }
@@ -182,13 +175,13 @@ private fun AnimatedOrderTopBar(
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun CardProgressOrder(orderDetail: OrderDetail) {
+fun CardProgressOrder(orderDetail: OrderDetailState) {
     val context = LocalContext.current
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        shape    = RoundedCornerShape(24.dp),
-        colors   = CardDefaults.elevatedCardColors(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
@@ -217,31 +210,31 @@ fun CardProgressOrder(orderDetail: OrderDetail) {
                     // Location chip
                     FilledIconButton(
                         onClick = {
-                            context.launchNavigation(orderDetail.latitude, orderDetail.longitude)
+                            context.launchNavigation(orderDetail.client?.longitude?: 0.0, orderDetail.client?.latitude?: 0.0)
                         },
                         modifier = Modifier.size(40.dp),
-                        colors   = IconButtonDefaults.filledIconButtonColors(
+                        colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
                         Icon(
-                            imageVector        = Icons.Default.LocationOn,
+                            imageVector = Icons.Default.LocationOn,
                             contentDescription = "Abrir en mapa",
-                            modifier           = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
                     Column {
                         Text(
-                            text     = orderDetail.addressName,
-                            style    = MaterialTheme.typography.titleSmall,
+                            text = orderDetail.client?.address?: "",
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            color    = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            text  = "Dirección de entrega",
+                            text = "Dirección de entrega",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = .7f)
                         )
@@ -258,27 +251,27 @@ fun CardProgressOrder(orderDetail: OrderDetail) {
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Box(
-                    modifier        = Modifier
+                    modifier = Modifier
                         .size(36.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.tertiaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector        = Icons.Default.Person,
+                        imageVector = Icons.Default.Person,
                         contentDescription = null,
-                        modifier           = Modifier.size(20.dp),
-                        tint               = MaterialTheme.colorScheme.onTertiaryContainer
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
                 Column {
                     Text(
-                        text  = orderDetail.clientName,
+                        text = orderDetail.client?.name?: "",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text  = "Cliente",
+                        text = "Cliente",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -287,12 +280,14 @@ fun CardProgressOrder(orderDetail: OrderDetail) {
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                color    = MaterialTheme.colorScheme.outlineVariant
+                color = MaterialTheme.colorScheme.outlineVariant
             )
 
             // ── Timeline ──────────────────────────────────────────────────
             AnimatedTimeline(
-                steps    = mySteps,
+                steps = getGenericTimeline(
+                    currentState = DeliveryState.Idle
+                ),
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -308,9 +303,9 @@ fun AnimatedTimeline(steps: List<TimelineStep>, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth()) {
         steps.forEachIndexed { index, step ->
             AnimatedTimelineItem(
-                step       = step,
-                index      = index,
-                isLast     = index == steps.size - 1
+                step = step,
+                index = index,
+                isLast = index == steps.size - 1
             )
         }
     }
@@ -330,16 +325,16 @@ private fun AnimatedTimelineItem(
 
     val dotColor = when {
         step.isCompleted -> MaterialTheme.colorScheme.primary
-        step.isActive    -> MaterialTheme.colorScheme.tertiary
-        else             -> MaterialTheme.colorScheme.outlineVariant
+        step.isActive -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.outlineVariant
     }
 
     // Pulse animation for the active dot
     val pulseScale by rememberInfiniteTransition(label = "pulse").animateFloat(
         initialValue = 1f,
-        targetValue  = if (step.isActive) 1.3f else 1f,
+        targetValue = if (step.isActive) 1.3f else 1f,
         animationSpec = infiniteRepeatable(
-            animation  = tween(800, easing = FastOutSlowInEasing),
+            animation = tween(800, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "dotPulse"
@@ -347,7 +342,7 @@ private fun AnimatedTimelineItem(
 
     AnimatedVisibility(
         visible = visible,
-        enter   = fadeIn(tween(300)) + slideInHorizontally(tween(300)) { -30 }
+        enter = fadeIn(tween(300)) + slideInHorizontally(tween(300)) { -30 }
     ) {
         Row(
             modifier = Modifier
@@ -357,7 +352,7 @@ private fun AnimatedTimelineItem(
             // ── Left rail ──────────────────────────────────────────────
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier            = Modifier.width(28.dp)
+                modifier = Modifier.width(28.dp)
             ) {
                 // Outer ring for active/completed states
                 Box(contentAlignment = Alignment.Center) {
@@ -410,18 +405,18 @@ private fun AnimatedTimelineItem(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text       = step.title,
-                    style      = MaterialTheme.typography.bodyMedium,
+                    text = step.title,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (step.isActive) FontWeight.Bold else FontWeight.Normal,
-                    color      = when {
-                        step.isActive    -> MaterialTheme.colorScheme.onSurface
+                    color = when {
+                        step.isActive -> MaterialTheme.colorScheme.onSurface
                         step.isCompleted -> MaterialTheme.colorScheme.onSurface
-                        else             -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
                     }
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text  = step.subtitle,
+                    text = step.subtitle,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -434,9 +429,9 @@ private fun AnimatedTimelineItem(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text     = "En progreso",
-                            style    = MaterialTheme.typography.labelSmall,
-                            color    = MaterialTheme.colorScheme.onTertiaryContainer,
+                            text = "En progreso",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onTertiaryContainer,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }
@@ -465,7 +460,7 @@ private fun StaggeredItem(
     }
     AnimatedVisibility(
         visible = visible,
-        enter   = fadeIn(tween(350)) + slideInVertically(tween(350)) { 40 }
+        enter = fadeIn(tween(350)) + slideInVertically(tween(350)) { 40 }
     ) {
         content()
     }
@@ -476,20 +471,22 @@ private fun StaggeredItem(
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Composable
-fun ProductItem() {
+fun ProductItem(
+    orderItem: OrderItemEntity
+) {
     ElevatedCard(
-        modifier  = Modifier.fillMaxWidth(),
-        shape     = RoundedCornerShape(16.dp),
-        colors    = CardDefaults.elevatedCardColors(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier            = Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment   = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Placeholder thumbnail
@@ -502,19 +499,19 @@ fun ProductItem() {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text  = "Nombre del producto",
+                    text = orderItem.name,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    text  = "Descripción breve",
+                    text = "Descripción breve",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Text(
-                text  = "$99.00",
+                text = "$ ${ orderItem.prince }",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

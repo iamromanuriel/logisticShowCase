@@ -1,11 +1,12 @@
 package com.example.logisticshowcase.ui.screen.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.logisticshowcase.data.db.entity.UserEntity
 import com.example.logisticshowcase.data.db.entity.Vehicle
+import com.example.logisticshowcase.data.repository.order_repository.OrderRepository
 import com.example.logisticshowcase.data.repository.user_repository.UserRepository
+import com.example.logisticshowcase.data.usescase.SyncOrderDataUseCase
 import com.example.logisticshowcase.data.usescase.SyncUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +23,12 @@ data class HomeUiState(
     val isLoading: Boolean = false,
 )
 
-
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val asyncUseCase: SyncUserDataUseCase
+    private val asyncUseCase: SyncUserDataUseCase,
+    private val orderRepository: OrderRepository,
+    private val syncOrderDataUseCase: SyncOrderDataUseCase
 ): ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -39,8 +41,7 @@ class HomeViewModel @Inject constructor(
             user = user,
             vehicle = vehicle
         )
-    }
-        .stateIn(
+    }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = HomeUiState()

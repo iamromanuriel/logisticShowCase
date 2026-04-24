@@ -4,6 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,7 +18,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,20 +26,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.logisticshowcase.data.db.entity.UserEntity
 import com.example.logisticshowcase.data.db.entity.Vehicle
-import com.example.logisticshowcase.ui.nav.Home
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    onNavigateToMap: () -> Unit = {}
 ){
     val state by viewModel.state.collectAsStateWithLifecycle()
-    HomeScreen(state = state)
+    HomeScreen(state = state, onNavigateToMap = onNavigateToMap)
 }
 
 @Composable
 private fun HomeScreen(
-    state: HomeUiState
+    state: HomeUiState,
+    onNavigateToMap: () -> Unit
 ) {
     var headerVisible by remember { mutableStateOf(false) }
     var statusVisible by remember { mutableStateOf(false) }
@@ -89,7 +90,7 @@ private fun HomeScreen(
                     animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy)
                 )
             ) {
-                OnlineStatusCard(isOnline = state.user?.enable?:false)
+                OnlineStatusCard(hasOrders = true, onClick = onNavigateToMap)
             }
 
             // ── Tarjeta del vehículo ──────────────────────────────────────
@@ -202,11 +203,10 @@ fun PulsingAvatar(initials: String, isOnline: Boolean) {
 // ─── Tarjeta de estado del turno ─────────────────────────────────────────────
 
 @Composable
-fun OnlineStatusCard(isOnline: Boolean) {
-    var toggled by remember { mutableStateOf(isOnline) }
+fun OnlineStatusCard(hasOrders: Boolean, onClick: () -> Unit = {}) {
 
     val cardColor by animateColorAsState(
-        targetValue = if (toggled)
+        targetValue = if (hasOrders)
             MaterialTheme.colorScheme.primaryContainer
         else
             MaterialTheme.colorScheme.surfaceVariant,
@@ -216,6 +216,7 @@ fun OnlineStatusCard(isOnline: Boolean) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
+        onClick = { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -228,44 +229,39 @@ fun OnlineStatusCard(isOnline: Boolean) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Icon(
-                    imageVector = if (toggled) Icons.Filled.Add else Icons.Outlined.Clear,
+                    imageVector = if (hasOrders) Icons.Filled.Add else Icons.Outlined.Clear,
                     contentDescription = null,
-                    tint = if (toggled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = if (hasOrders) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(22.dp)
                 )
                 Column {
                     Text(
-                        text = if (toggled) "En línea" else "Fuera de línea",
+                        text = "En línea",
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = if (toggled)
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = if (toggled) "Listo para recibir pedidos" else "No recibirás pedidos",
+                        text = if (hasOrders) "Tienes 3 pedidos" else "Listo para recibir pedidos",
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (toggled)
+                        color = if (hasOrders)
                             MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
-            }
 
-            /* Switch(
-                checked = toggled,
-                onCheckedChange = { toggled = it },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.primary,
-                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowRight,
+                    contentDescription = "navToMap",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-            )*/
+            }
         }
     }
 }

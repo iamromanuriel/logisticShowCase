@@ -43,8 +43,7 @@ class MainActivity : ComponentActivity() {
                 )
                 if(mainState.userLogIn){
                     if(localPermission.status.isGranted){
-                        //NavigationGraph()
-                        HomeScreen()
+                        NavigationGraph()
                     }else{
                         GetLocationPermission()
                     }

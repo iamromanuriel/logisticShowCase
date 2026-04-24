@@ -2,11 +2,15 @@ package com.example.logisticshowcase.ui.screen.order_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.logisticshowcase.data.db.entity.ClientEntity
+import com.example.logisticshowcase.data.db.entity.OrderEntity
+import com.example.logisticshowcase.data.db.entity.OrderItemEntity
 import com.example.logisticshowcase.data.deliveryManager.DeliveryManager
 import com.example.logisticshowcase.data.deliveryManager.DeliveryState
 import com.example.logisticshowcase.data.model.OrderDetail
 import com.example.logisticshowcase.data.model.ProductOrder
 import com.example.logisticshowcase.data.repository.main_repository.MainRepository
+import com.example.logisticshowcase.data.repository.order_repository.OrderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,8 +21,9 @@ import javax.inject.Inject
 
 
 data class OrderDetailState(
-    val orderDetail  : OrderDetail? = null,
-    val products: List<ProductOrder> = emptyList(),
+    val orderDetail  : OrderEntity? = null,
+    val products: List<OrderItemEntity> = emptyList(),
+    val client: ClientEntity? = null,
     val isLoading : Boolean = false,
     val deliveryState: DeliveryState? = null
 )
@@ -29,25 +34,25 @@ sealed class OrderDetailIntent(){
 
 @HiltViewModel
 class OrderDetailViewModel @Inject constructor(
-    mainRepository: MainRepository,
+    orderRepository: OrderRepository,
     private val deliveryManager: DeliveryManager
 ): ViewModel() {
     private val _state = MutableStateFlow(OrderDetailState())
     val state = combine(
         _state,
-        mainRepository.getOrderDetail(),
-        mainRepository.getProductOrder(),
-        deliveryManager.deliveryState.distinctUntilChanged { old, new -> old == new }
-    ){ state, orderDetail, products, deliveryState ->
+        orderRepository.getOrderFlow(),
+        orderRepository.getOrderItemFlow(),
+        orderRepository.getClientFlow()
+    ){ state, order, orderItem, client ->
         state.copy(
-            orderDetail = orderDetail,
-            products = products,
-            deliveryState = deliveryState
+            orderDetail = order,
+            products = orderItem,
+            client = client
         )
     }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        OrderDetailState()
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = OrderDetailState()
     )
 
 

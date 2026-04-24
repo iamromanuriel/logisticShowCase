@@ -17,10 +17,12 @@ fun NavigationGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = Map
+        startDestination = Home
     ) {
         composable<Home> {
-            HomeScreen()
+            HomeScreen(
+                onNavigateToMap = { navController.navigate(Map) }
+            )
         }
 
         composable<Map> {
