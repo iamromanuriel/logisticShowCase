@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.logisticshowcase.data.db.entity.OrderEntity
 import com.example.logisticshowcase.data.model.OrderItem
 
 private data class StatusColors(
@@ -52,7 +53,7 @@ private data class StatusColors(
 
 @Composable
 fun OrderItemCard(
-    order: OrderItem,
+    order: OrderEntity,
     onClick: () -> Unit
 ) {
     // Efecto de presión al hacer click
@@ -87,13 +88,11 @@ fun OrderItemCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
 
-            // ── Acento lateral de color según status ──────────────────────
             Box(
                 modifier = Modifier
                     .width(4.dp)
                     .height(52.dp)
                     .clip(RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp))
-
             )
 
             // ── Ícono de estado ───────────────────────────────────────────
@@ -116,7 +115,7 @@ fun OrderItemCard(
                 verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 Text(
-                    text = order.addressName,
+                    text = order.dateCreate.toString(),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -124,7 +123,7 @@ fun OrderItemCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = order.clientName,
+                    text = order.amount.toString(),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -145,20 +144,14 @@ fun OrderItemCard(
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
-                        text = order.itemCount.toString(),
+                        text = order.orderNum,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                // Flecha de navegación
-                Icon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "Ver detalle",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
-                )
+
             }
         }
     }

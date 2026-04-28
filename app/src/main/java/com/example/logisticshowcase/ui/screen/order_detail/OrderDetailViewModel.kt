@@ -7,16 +7,18 @@ import com.example.logisticshowcase.data.db.entity.OrderEntity
 import com.example.logisticshowcase.data.db.entity.OrderItemEntity
 import com.example.logisticshowcase.data.deliveryManager.DeliveryManager
 import com.example.logisticshowcase.data.deliveryManager.DeliveryState
-import com.example.logisticshowcase.data.model.OrderDetail
-import com.example.logisticshowcase.data.model.ProductOrder
-import com.example.logisticshowcase.data.repository.main_repository.MainRepository
 import com.example.logisticshowcase.data.repository.order_repository.OrderRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -29,31 +31,52 @@ data class OrderDetailState(
 )
 
 sealed class OrderDetailIntent(){
-    data class OnChangeState(val newState: DeliveryState): OrderDetailIntent()
+    data class OnChangeState(val newState: Int): OrderDetailIntent()
 }
 
 @HiltViewModel
 class OrderDetailViewModel @Inject constructor(
-    orderRepository: OrderRepository,
+    private val orderRepository: OrderRepository,
     private val deliveryManager: DeliveryManager
 ): ViewModel() {
+
+    private val _message = MutableSharedFlow<String?>()
+    private val message = _message.asSharedFlow()
     private val _state = MutableStateFlow(OrderDetailState())
     val state = combine(
         _state,
         orderRepository.getOrderFlow(),
         orderRepository.getOrderItemFlow(),
-        orderRepository.getClientFlow()
-    ){ state, order, orderItem, client ->
+        orderRepository.getClientFlow(),
+        deliveryManager.deliveryState
+    ){ state, order, orderItem, client, deliveryState ->
         state.copy(
             orderDetail = order,
             products = orderItem,
-            client = client
+            client = client,
+            deliveryState = deliveryState
         )
-    }.stateIn(
+    }
+        .onStart { onInit() }
+        .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = OrderDetailState()
     )
+
+    private fun onInit() {
+
+        viewModelScope.launch {
+            orderRepository.getOrderFlow()
+                .map { it.status }
+                .distinctUntilChanged()
+                .collect { remoteStatus ->
+                    deliveryManager.syncStateFromRemote(remoteStatus)
+                        .onFailure { _message.emit(it.message) }
+                }
+        }
+    }
+
 
 
 
@@ -63,7 +86,7 @@ class OrderDetailViewModel @Inject constructor(
         }
     }
 
-    private fun onChangeState(newState: DeliveryState){
+    private fun onChangeState(newState: Int){
         deliveryManager.updateDeliveryState(newState)
     }
 }

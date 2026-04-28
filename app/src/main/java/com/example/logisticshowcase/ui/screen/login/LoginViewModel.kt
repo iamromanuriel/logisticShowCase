@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.logisticshowcase.R
 import com.example.logisticshowcase.data.repository.AuthRepository
+import com.example.logisticshowcase.data.repository.user_repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -31,18 +33,13 @@ sealed class LoginIntent(){
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val userRepository: UserRepository
 ): ViewModel(){
 
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
 
-    init {
-        viewModelScope.launch {
-            authRepository.testCollectionUser()
-        }
-
-    }
+    init {  }
 
 
     fun onIntent(intent: LoginIntent){
@@ -83,13 +80,29 @@ class LoginViewModel @Inject constructor(
             val userName = _state.value.userName
 
             if(isValidateUserName(userName = userName)){
-                _state.update { stateCurrent ->
-                    stateCurrent.copy(
-                        userNameError = null,
-                        loading = false,
-                        isSuccess = true
-                    )
+
+                userRepository.onSignIn(
+                    user = userName,
+                    password = _state.value.password
+                ).onSuccess {
+                    println("onLogin: success")
+                    _state.update { stateCurrent ->
+                        stateCurrent.copy(
+                            userNameError = null,
+                            loading = false,
+                            isSuccess = true
+                        )
+                    }
+                }.onFailure {
+                    println("onLogin: failure")
+                    _state.update { stateCurrent ->
+                        stateCurrent.copy(
+                            userNameError = R.string.invaliate_username,
+                            loading = false
+                        )
+                    }
                 }
+
             }else{
                 _state.update { stateCurrent ->
                     stateCurrent.copy(

@@ -49,6 +49,22 @@ fun getUserPresenter(): Flow<List<UserCollection>>{
 
     }
 
+    suspend fun onSignIn(user: String, password: String): Result<Unit>{
+        return runCatching {
+            val result = firestore.collection("users")
+                .whereEqualTo("user", user)
+                .whereEqualTo("password", password)
+                .get()
+                .await()
+
+            if(!result.isEmpty){
+                Unit
+            }else{
+                throw Exception("User not found")
+            }
+        }
+    }
+
 
     suspend fun getUser(): Result<UserCollection>{
         return try {

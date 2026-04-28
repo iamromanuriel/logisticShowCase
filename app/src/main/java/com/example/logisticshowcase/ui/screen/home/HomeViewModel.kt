@@ -26,7 +26,7 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val asyncUseCase: SyncUserDataUseCase,
+    private val syncUseCase: SyncUserDataUseCase,
     private val orderRepository: OrderRepository,
     private val syncOrderDataUseCase: SyncOrderDataUseCase
 ): ViewModel() {
@@ -49,7 +49,8 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-
+            //syncUseCase.invoke()
+            //syncOrderDataUseCase.invoke()
         }
     }
 

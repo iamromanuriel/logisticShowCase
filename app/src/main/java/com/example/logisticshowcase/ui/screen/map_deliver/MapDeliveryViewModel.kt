@@ -1,12 +1,12 @@
 package com.example.logisticshowcase.ui.screen.map_deliver
 
 
-import android.util.Log
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.logisticshowcase.data.model.OrderItem
-import com.example.logisticshowcase.data.repository.main_repository.MainRepository
+import com.example.logisticshowcase.data.db.entity.ClientEntity
+import com.example.logisticshowcase.data.db.entity.OrderEntity
+import com.example.logisticshowcase.data.repository.order_repository.OrderRepository
 import com.example.logisticshowcase.util.location.LocationUtil
 import com.google.android.gms.maps.model.LatLng
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,8 +20,9 @@ import javax.inject.Inject
 
 @Immutable
 data class MapDeliveryState(
-    val location: LatLng = LatLng(19.0437, -98.1983),
-    val orders: List<OrderItem> = emptyList(),
+    val location : LatLng = LatLng(0.0, 0.0),
+    val clients: List<ClientEntity> = emptyList(),
+    val orders: List<OrderEntity> = emptyList(),
     val isLoading: Boolean = false
 )
 
@@ -33,15 +34,17 @@ sealed class MapDeliveryIntent{
 @HiltViewModel
 class MapDeliveryViewModel @Inject constructor(
     private val locationUtil: LocationUtil,
-    private val mainRepository: MainRepository
+    private val orderRepository: OrderRepository
 ): ViewModel() {
 
     private val _state = MutableStateFlow(MapDeliveryState())
-    val state = _state
-        .combine(
-            mainRepository.getOrders()
-        ){ stateCurrent, orders ->
-            stateCurrent.copy(
+    val state = combine(
+            _state,
+            orderRepository.getClientsFlow(),
+            orderRepository.getOrdersFlow()
+        ){ state, clients, orders ->
+            state.copy(
+                clients = clients,
                 orders = orders
             )
         }
@@ -68,5 +71,15 @@ class MapDeliveryViewModel @Inject constructor(
 
                 }
         }
+    }
+
+    fun onIntent(intent : MapDeliveryIntent) {
+        when(intent){
+            is MapDeliveryIntent.OnSelectOrder -> onSelectOrder(intent.idOrder)
+        }
+    }
+
+    private fun onSelectOrder(idOrder: Int){
+
     }
 }

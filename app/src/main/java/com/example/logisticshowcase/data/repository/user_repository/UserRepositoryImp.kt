@@ -19,6 +19,13 @@ class UserRepositoryImp (
     override val userLogIn: StateFlow<Boolean>
         get() = _userLogIn
 
+    override suspend fun onSignIn(
+        user: String,
+        password: String
+    ): Result<Unit> {
+        return firestore.onSignIn(user = user, password = password)
+    }
+
     override suspend fun getUserFirestore(): Result<UserCollection> {
         return firestore.getUser()
     }
@@ -44,7 +51,7 @@ class UserRepositoryImp (
     }
 
     init {
-        _userLogIn.value = true
+        //_userLogIn.value = true
     }
 
 

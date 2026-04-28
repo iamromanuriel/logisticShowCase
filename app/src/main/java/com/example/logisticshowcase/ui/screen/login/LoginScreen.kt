@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.logisticshowcase.R
@@ -62,6 +65,28 @@ private fun LoginScreen(
                     onIntent(LoginIntent.OnLogin)
                 }
             )
+        }
+
+        if(state.loading){
+            Dialog(
+                onDismissRequest = {}
+            ) {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding(10.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(20.dp))
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Cargando...",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -158,7 +183,7 @@ fun LoginControls(
 
     Button(
         enabled = buttonEnable,
-        onClick = onLogin,
+        onClick = { onLogin() },
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)

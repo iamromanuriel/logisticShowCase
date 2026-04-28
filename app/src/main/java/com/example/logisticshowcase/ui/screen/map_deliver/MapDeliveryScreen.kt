@@ -37,6 +37,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,9 +50,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.logisticshowcase.data.db.entity.OrderEntity
 import com.example.logisticshowcase.data.model.OrderItem
 import com.example.logisticshowcase.ui.components.OrderItemCard
 import com.example.logisticshowcase.ui.nav.DetailOrder
+import com.example.logisticshowcase.util.RememberedGoogleMap
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -98,6 +101,14 @@ fun MapDeliveryScreen(
     val modalState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
+    val mapUiSettings = remember {
+        MapUiSettings(zoomControlsEnabled = false)
+    }
+    val mapProperties = remember {
+        MapProperties(isMyLocationEnabled = true)
+    }
+
     var showClientInfo by remember { mutableStateOf(false) }
     var showModalOrder by remember { mutableStateOf(false) }
 
@@ -121,31 +132,31 @@ fun MapDeliveryScreen(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             cameraPositionState = cameraPosition,
-            uiSettings = MapUiSettings(
-                zoomControlsEnabled = false
-            ),
-            properties = MapProperties(
-                isMyLocationEnabled = true
-            )
+            uiSettings = mapUiSettings,
+            properties = mapProperties
         ) {
 
-            state.orders.forEach { orderItem ->
-                MarkerComposable(
-                    state = MarkerState(position = orderItem.toLatLng()),
-                    onClick = { marker -> showClientInfo = true; true }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
+            state.clients.forEach { client ->
+                key (client.id){
+                    MarkerComposable(
+                        state = remember(client.id) {
+                            MarkerState(position = client.toLatLng())
+                        },
+                        onClick = { marker -> showClientInfo = true; true }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            tint = Color.White
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -190,7 +201,7 @@ fun MapDeliveryScreen(
 
 @Composable
 fun LayoutItemOrders(
-    orders: List<OrderItem>,
+    orders: List<OrderEntity>,
     innerPaddingValues: PaddingValues = PaddingValues(0.dp),
     onNavigationDetail: (Int) -> Unit = {}
 ) {

@@ -79,6 +79,7 @@ private fun OrderDetailScreen(
                 orderId =  "referencia de lugar—",
                 entered = entered,
                 onBack = onBackNavigation,
+                deliveryState = state.deliveryState,
                 onFinish = { }
             )
         },
@@ -125,7 +126,8 @@ private fun AnimatedOrderTopBar(
     orderId: String,
     entered: Boolean,
     onBack: () -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    deliveryState: DeliveryState? = null
 ) {
     AnimatedVisibility(
         visible = entered,
@@ -160,7 +162,7 @@ private fun AnimatedOrderTopBar(
                     modifier = Modifier.padding(end = 8.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Finalizar")
+                    Text(deliveryState?.label?: "Continuar")
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -284,12 +286,15 @@ fun CardProgressOrder(orderDetail: OrderDetailState) {
             )
 
             // ── Timeline ──────────────────────────────────────────────────
-            AnimatedTimeline(
-                steps = getGenericTimeline(
-                    currentState = DeliveryState.Idle
-                ),
-                modifier = Modifier.padding(16.dp)
-            )
+            orderDetail.deliveryState?.let { deliveryState ->
+                AnimatedTimeline(
+                    steps = getGenericTimeline(
+                        currentState = deliveryState
+                    ),
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
         }
     }
 }

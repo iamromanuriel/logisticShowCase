@@ -1,7 +1,11 @@
 package com.example.logisticshowcase.data.deliveryManager
 
+import com.example.logisticshowcase.data.deliveryManager.DeliveryState.Companion.values
+import com.example.logisticshowcase.data.deliveryManager.DeliveryState.Idle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.collections.find
+
 data class TimelineStep(
     val title: String,
     val subtitle: String,
@@ -33,12 +37,21 @@ sealed class DeliveryState(val order: Int, val label: String) {
     data object InTransit : DeliveryState(1, "Llege")
     data object ArrivedAtDestination : DeliveryState(2, "Finalizar")
     data object Completed : DeliveryState(3, "")
-    data object Cancelled : DeliveryState(4, "")
+    data object Cancelled : DeliveryState(4, "");
+    companion object {
+        val values = listOf(Idle, InTransit, ArrivedAtDestination, Completed, Cancelled)
+
+        fun fromOrder(order: Int): DeliveryState =
+            values.firstOrNull { it.order == order } ?: Idle
+    }
 }
+
+fun Int.toDeliveryState(): DeliveryState = DeliveryState.fromOrder(this)
 
 interface DeliveryManager{
     val deliveryState : StateFlow<DeliveryState>
-    fun updateDeliveryState(newState: DeliveryState): Result<Unit>
+    fun syncStateFromRemote(remoteStatus: Int): Result<Unit>
+    fun updateDeliveryState(newState: Int): Result<Unit>
 
     fun cancelDelivery()
 }
@@ -49,13 +62,27 @@ class DeliveryManagerImpl() : DeliveryManager{
     override val deliveryState: StateFlow<DeliveryState>
         get() = _deliveryState
 
-    override fun updateDeliveryState(newState: DeliveryState): Result<Unit> {
+    override fun syncStateFromRemote(remoteStatus: Int): Result<Unit> {
         return runCatching {
-            val oldState = _deliveryState.value
-            if(isValidTransition(old = oldState,new = newState)){
+            val newState = remoteStatus.toDeliveryState()
+            if (_deliveryState.value != newState) {
                 _deliveryState.value = newState
-            }else{
-                throw IllegalArgumentException("Invalid transition from $oldState to $newState")
+            }
+        }
+    }
+
+    override fun updateDeliveryState(newState: Int): Result<Unit> {
+        return runCatching {
+            val old = _deliveryState.value
+            val new = newState.toDeliveryState()
+            println("DeliveryState $old → $new")
+
+            if (isValidTransition(old = old, new = new)) {
+                _deliveryState.value = new
+            } else {
+                throw IllegalArgumentException(
+                    "Transición inválida: ${old::class.simpleName} → ${new::class.simpleName}"
+                )
             }
         }
     }

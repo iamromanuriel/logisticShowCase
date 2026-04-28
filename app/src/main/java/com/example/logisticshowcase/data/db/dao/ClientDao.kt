@@ -10,4 +10,7 @@ import kotlinx.coroutines.flow.Flow
 interface ClientDao: BaseDao<ClientEntity> {
     @Query("SELECT * FROM Client WHERE id = :id")
     fun getClientById(id: Int): Flow<ClientEntity>
+
+    @Query("SELECT * FROM Client")
+    fun getClients(): Flow<List<ClientEntity>>
 }

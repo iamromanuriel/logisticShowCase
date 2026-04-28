@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository {
     val userLogIn: StateFlow<Boolean>
-
+    suspend fun onSignIn(user: String, password: String): Result<Unit>
     suspend fun getUserFirestore(): Result<UserCollection>
     suspend fun getVehicleFirestore(): Result<VehicleCollection>
     suspend fun localSaveUser(user: UserEntity)

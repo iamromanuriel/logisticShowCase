@@ -19,4 +19,6 @@ interface OrderRepository {
     fun getOrderFlow(): Flow<OrderEntity>
     fun getOrderItemFlow(): Flow<List<OrderItemEntity>>
     fun getClientFlow(): Flow<ClientEntity>
+    fun getClientsFlow(): Flow<List<ClientEntity>>
+    fun getOrdersFlow(): Flow<List<OrderEntity>>
 }
