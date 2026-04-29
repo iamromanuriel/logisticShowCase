@@ -15,9 +15,7 @@ class UserRepositoryImp (
     private val database: AppDatabase,
     private val firestore: FirestoreDataSource
 ) : UserRepository {
-    private val _userLogIn = MutableStateFlow(false)
-    override val userLogIn: StateFlow<Boolean>
-        get() = _userLogIn
+
 
     override suspend fun onSignIn(
         user: String,
@@ -50,10 +48,9 @@ class UserRepositoryImp (
         return database.vehicleDao().getVehicle()
     }
 
-    init {
-        //_userLogIn.value = true
+    override fun hasUser(): Flow<Boolean> {
+        return database.userDao().hasUser()
     }
-
 
 
 }

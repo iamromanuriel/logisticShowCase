@@ -11,4 +11,7 @@ interface UserDao: BaseDao<UserEntity> {
 
     @Query("SELECT * FROM User WHERE id = :id")
     fun getUser(id: Int): Flow<UserEntity>
+
+    @Query("SELECT EXISTS(SELECT * FROM User)")
+    fun hasUser(): Flow<Boolean>
 }

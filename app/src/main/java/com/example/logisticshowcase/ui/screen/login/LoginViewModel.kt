@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.logisticshowcase.R
 import com.example.logisticshowcase.data.repository.AuthRepository
 import com.example.logisticshowcase.data.repository.user_repository.UserRepository
+import com.example.logisticshowcase.data.usescase.SyncUserDataUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,13 +34,12 @@ sealed class LoginIntent(){
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val syncUserDataUseCase: SyncUserDataUseCase
 ): ViewModel(){
 
     private val _state = MutableStateFlow(LoginState())
     val state = _state.asStateFlow()
-
-    init {  }
 
 
     fun onIntent(intent: LoginIntent){
@@ -85,7 +85,7 @@ class LoginViewModel @Inject constructor(
                     user = userName,
                     password = _state.value.password
                 ).onSuccess {
-                    println("onLogin: success")
+
                     _state.update { stateCurrent ->
                         stateCurrent.copy(
                             userNameError = null,
@@ -93,8 +93,9 @@ class LoginViewModel @Inject constructor(
                             isSuccess = true
                         )
                     }
+                    syncUserDataUseCase.invoke()
                 }.onFailure {
-                    println("onLogin: failure")
+                    println("onLogin failure :: ${it.message}")
                     _state.update { stateCurrent ->
                         stateCurrent.copy(
                             userNameError = R.string.invaliate_username,

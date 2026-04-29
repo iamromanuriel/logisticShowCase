@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,31 +27,30 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userRepository: UserRepository,
-    private val syncUseCase: SyncUserDataUseCase,
-    private val orderRepository: OrderRepository,
     private val syncOrderDataUseCase: SyncOrderDataUseCase
-): ViewModel() {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
     val state = combine(
         _state,
         userRepository.userLocalFlow(),
         userRepository.vehicleLocalFlow()
-    ){ state, user, vehicle ->
+    ) { state, user, vehicle ->
         state.copy(
             user = user,
             vehicle = vehicle
         )
-    }.stateIn(
+    }
+        .onStart {  }
+        .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = HomeUiState()
         )
 
-    init {
+    private fun onStart() {
         viewModelScope.launch(Dispatchers.IO) {
-            //syncUseCase.invoke()
-            //syncOrderDataUseCase.invoke()
+            syncOrderDataUseCase.invoke()
         }
     }
 

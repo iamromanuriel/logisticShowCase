@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository {
-    val userLogIn: StateFlow<Boolean>
     suspend fun onSignIn(user: String, password: String): Result<Unit>
     suspend fun getUserFirestore(): Result<UserCollection>
     suspend fun getVehicleFirestore(): Result<VehicleCollection>
@@ -16,4 +15,5 @@ interface UserRepository {
     suspend fun localSaveVehicle(vehicle: Vehicle)
     fun userLocalFlow(): Flow<UserEntity>
     fun vehicleLocalFlow(): Flow<Vehicle>
+    fun hasUser(): Flow<Boolean>
 }

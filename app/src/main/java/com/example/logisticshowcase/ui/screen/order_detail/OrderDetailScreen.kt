@@ -52,11 +52,18 @@ fun OrderDetailScreen(
     val intent: (OrderDetailIntent) -> Unit = remember { viewModel::onIntent }
     val onBack: () -> Unit = remember { { navController.popBackStack() } }
 
-    LaunchedEffect(state) {
-        Log.d("OrderDetailScreen", "state: ${Gson().toJson(state.orderDetail)}")
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(viewModel.message) {
+
+        viewModel.message.collect { message ->
+            message?.let {
+                snackBarHostState.showSnackbar(it)
+            }
+        }
     }
 
-    OrderDetailScreen(state = state, intent = intent, onBackNavigation = onBack)
+    OrderDetailScreen(snackBarHostState = snackBarHostState, state = state, intent = intent, onBackNavigation = onBack)
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -67,6 +74,7 @@ fun OrderDetailScreen(
 @Composable
 private fun OrderDetailScreen(
     state: OrderDetailState,
+    snackBarHostState: SnackbarHostState,
     intent: (OrderDetailIntent) -> Unit = {},
     onBackNavigation: () -> Unit = {}
 ) {
@@ -74,13 +82,14 @@ private fun OrderDetailScreen(
     LaunchedEffect(Unit) { entered = true }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             AnimatedOrderTopBar(
                 orderId =  "referencia de lugar—",
                 entered = entered,
                 onBack = onBackNavigation,
                 deliveryState = state.deliveryState,
-                onFinish = { }
+                onFinish = { intent(OrderDetailIntent.OnChangeState(DeliveryState.ArrivedAtDestination.order)) }
             )
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -116,9 +125,6 @@ private fun OrderDetailScreen(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Top bar
-// ─────────────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -158,7 +164,13 @@ private fun AnimatedOrderTopBar(
             },
             actions = {
                 FilledTonalButton(
-                    onClick = onFinish,
+                    onClick = {
+                        when (deliveryState) {
+                            DeliveryState.Idle -> {}
+                            DeliveryState.InTransit -> onFinish()
+                            else -> {}
+                        }
+                    },
                     modifier = Modifier.padding(end = 8.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {

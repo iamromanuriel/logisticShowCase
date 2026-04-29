@@ -51,7 +51,7 @@ fun getUserPresenter(): Flow<List<UserCollection>>{
 
     suspend fun onSignIn(user: String, password: String): Result<Unit>{
         return runCatching {
-            val result = firestore.collection("users")
+            val result = firestore.collection(FirestoreCollection.USERS.value)
                 .whereEqualTo("user", user)
                 .whereEqualTo("password", password)
                 .get()

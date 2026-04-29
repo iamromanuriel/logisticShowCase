@@ -41,8 +41,14 @@ sealed class DeliveryState(val order: Int, val label: String) {
     companion object {
         val values = listOf(Idle, InTransit, ArrivedAtDestination, Completed, Cancelled)
 
-        fun fromOrder(order: Int): DeliveryState =
-            values.firstOrNull { it.order == order } ?: Idle
+        fun fromOrder(order: Int): DeliveryState = when (order) {
+            0 -> Idle
+            1 -> InTransit
+            2 -> ArrivedAtDestination
+            3 -> Completed
+            4 -> Cancelled
+            else -> Idle
+        }
     }
 }
 
@@ -64,7 +70,9 @@ class DeliveryManagerImpl() : DeliveryManager{
 
     override fun syncStateFromRemote(remoteStatus: Int): Result<Unit> {
         return runCatching {
+            println("DeliveryState sync $remoteStatus")
             val newState = remoteStatus.toDeliveryState()
+            println("DeliveryState sync $newState")
             if (_deliveryState.value != newState) {
                 _deliveryState.value = newState
             }
@@ -102,3 +110,8 @@ class DeliveryManagerImpl() : DeliveryManager{
 
 }
 
+fun main(){
+    val state = 1.toDeliveryState()
+
+    println(state)
+}

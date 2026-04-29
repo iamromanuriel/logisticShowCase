@@ -41,7 +41,7 @@ class OrderDetailViewModel @Inject constructor(
 ): ViewModel() {
 
     private val _message = MutableSharedFlow<String?>()
-    private val message = _message.asSharedFlow()
+    val message = _message.asSharedFlow()
     private val _state = MutableStateFlow(OrderDetailState())
     val state = combine(
         _state,
@@ -87,6 +87,17 @@ class OrderDetailViewModel @Inject constructor(
     }
 
     private fun onChangeState(newState: Int){
-        deliveryManager.updateDeliveryState(newState)
+        val oldState = _state.value.deliveryState
+
+        viewModelScope.launch {
+            deliveryManager
+                .updateDeliveryState(newState)
+                .onSuccess {
+                    _message.emit("Cambio de estado exitoso")
+                }.onFailure {
+                    _message.emit(it.message.toString())
+                }
+        }
+
     }
 }
